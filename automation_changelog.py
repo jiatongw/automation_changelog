@@ -76,6 +76,31 @@ def write_rpms(path, major_minor, version, upstream_url, repo):
             n.writelines(lines)
             n.close()
 
+def write_version_control_file(isgobuild, major_minor, version):
+    fit_version_control_file = ""
+    if isgobuild:
+        path = "essentialpks_release/"
+    else:
+        path = "publish-release/"
+    for file in os.listdir(path):
+        if major_minor in file:
+            fit_version_control_file = os.path.join(path, file)
+            break
+    if not fit_version_control_file:
+        print("We don't support generating minor release!")
+        sys.exit(1)
+    new_version_control_file = path + "essentialpks-v" + version + "+vmware.1"
+    with open(fit_version_control_file, 'r') as f:
+        lines = f.readlines()
+        f.close()
+    with open(new_version_control_file, 'w') as n:
+        for line in lines:
+            if "kubernetes" in line:
+                n.writelines("kubernetes=v" + version + "+vmware.1\n")
+            else:
+                n.writelines(line)
+        n.close()
+    
 
 def parse_version(version):
     s = version.split(".")
@@ -83,11 +108,20 @@ def parse_version(version):
     return major_minor
 
 def usage():
-    print("Example: python3 automation_changelog.py -r kubernetes -v 1.15.0")
+    print('''usage: python3 automation_changelog.py [option] ... [-r | -v | --file ] [arg]
+Options and arguments :
+-v, --version : version; e.g. v1.14.2+vmware.1
+-r --repo     : kubernetes, etcd, cni-plugins, cri-tools or coredns
+-h, --help    : print help message and exit (also --help)
+-g      : is gobuild environment
+--file  : create new version control file
+''')
 
 if __name__ == '__main__':
+    isgobuild = False
+    generate_version_file = False
     try:
-        options, args = getopt.getopt(sys.argv[1:], "hr:v:", ["help", "repo=", "version="])
+        options, args = getopt.getopt(sys.argv[1:], "hr:v:g", ["help", "repo=", "version=", "file"])
     except getopt.GetoptError:
         print("Please check usage by -h or --help flag")
         usage()
@@ -98,13 +132,24 @@ if __name__ == '__main__':
             raise SystemExit(1)
         if name in ("-r", "--repo"):
             repo = value
+            continue
         if name in ("-v", "--version"):
             version = value
+            continue
+        if name in ("-g",):
+            isgobuild = True
+            continue
+        if name in ("--file,"):
+            generate_version_file = True
+            continue
+
     try:
         major_minor = parse_version(version)
         debpath, rpmpath, upstream_url = get_path_and_url(repo)
         write_debs(debpath, major_minor, version, upstream_url, repo)
         write_rpms(rpmpath, major_minor, version, upstream_url, repo)
+        if generate_version_file:
+            write_version_control_file(isgobuild, major_minor, version)
     except Exception as e:
         print(e)
         print("Usage: \n")
