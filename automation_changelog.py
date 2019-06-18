@@ -8,11 +8,11 @@ deb_template = '''{0} ({1}+vmware.1-1) stable; urgency=optional
   * Upstream release: https://github.com/{2}/releases/tag/v{3}
   * VMware release: https://github.com/heptio/{4}/releases/tag/v{5}+vmware.1
 
- -- VMware Release Engineering <release-engineering@heptio.com>  {6}'''
+ -- VMware Release Engineering <{6}>  {7}'''
 
-rpm_template = '''* {0} VMware Release Engineering <release-engineering@heptio.com>  - {1}-1.vmware.1
-- Upstream release: https://github.com/{2}/releases/tag/v{3}
-- VMware release: https://github.com/heptio/{4}/releases/tag/v{5}+vmware.1'''
+rpm_template = '''* {0} VMware Release Engineering <{1}>  - {2}-1.vmware.1
+- Upstream release: https://github.com/{3}/releases/tag/v{4}
+- VMware release: https://github.com/heptio/{5}/releases/tag/v{6}+vmware.1'''
 
 def get_path_and_url(repo):
     debpath = []
@@ -37,13 +37,13 @@ def get_path_and_url(repo):
     return debpath, rpmpath, upstream_url
 
 
-def write_debs(path, major_minor, version, upstream_url, repo):
+def write_debs(path, major_minor, version, upstream_url, repo, email):
     for p in path:
         filename = p + "/changelog-" + major_minor
         s = p.split("/")
         debname = s[-2:-1][0]
         current_time = time.strftime("%a, %d %b %Y %H:%M:%S %z", time.localtime())
-        args = [debname, version, upstream_url, version, repo, version, current_time]
+        args = [debname, version, upstream_url, version, repo, version, email, current_time]
         if not os.path.isfile(filename):
             with open(filename, "w") as f:
                 f.write(deb_template.format(*args))
@@ -58,10 +58,10 @@ def write_debs(path, major_minor, version, upstream_url, repo):
                 n.writelines(lines)
                 n.close()
 
-def write_rpms(path, major_minor, version, upstream_url, repo):
+def write_rpms(path, major_minor, version, upstream_url, repo, email):
     filename = path + "/changelog-" + major_minor
     current_time = time.strftime("%a %b %d %Y", time.localtime())
-    args = [current_time, version, upstream_url, version, repo, version]
+    args = [current_time, email, version, upstream_url, version, repo, version]
     if not os.path.isfile(filename):
         with open(filename, "w") as f:
             f.write(rpm_template.format(*args))
@@ -121,7 +121,7 @@ if __name__ == '__main__':
     isgobuild = False
     generate_version_file = False
     try:
-        options, args = getopt.getopt(sys.argv[1:], "hr:v:g", ["help", "repo=", "version=", "file"])
+        options, args = getopt.getopt(sys.argv[1:], "hr:v:ge:", ["help", "repo=", "version=", "file", "email="])
     except getopt.GetoptError:
         print("Please check usage by -h or --help flag")
         usage()
@@ -142,12 +142,15 @@ if __name__ == '__main__':
         if name in ("--file,"):
             generate_version_file = True
             continue
+        if name in ("-e", "--email,"):
+            email = value
+            continue
 
     try:
         major_minor = parse_version(version)
         debpath, rpmpath, upstream_url = get_path_and_url(repo)
-        write_debs(debpath, major_minor, version, upstream_url, repo)
-        write_rpms(rpmpath, major_minor, version, upstream_url, repo)
+        write_debs(debpath, major_minor, version, upstream_url, repo, email)
+        write_rpms(rpmpath, major_minor, version, upstream_url, repo, email)
         if generate_version_file:
             write_version_control_file(isgobuild, major_minor, version)
     except Exception as e:
