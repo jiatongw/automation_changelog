@@ -111,8 +111,9 @@ def usage():
     print('''usage: python3 automation_changelog.py [option] ... [-r | -v | --file ] [arg]
 Options and arguments :
 -v, --version : version; e.g. v1.14.2+vmware.1
--r --repo     : kubernetes, etcd, cni-plugins, cri-tools or coredns
+-r, --repo    : kubernetes, etcd, cni-plugins, cri-tools or coredns
 -h, --help    : print help message and exit (also --help)
+-e, --email   : email for changelog
 -g      : is gobuild environment
 --file  : create new version control file
 ''')
