@@ -100,7 +100,7 @@ def write_version_control_file(isgobuild, major_minor, version, vversion):
             else:
                 n.writelines(line)
         n.close()
-    
+
 
 def parse_version(version):
     s = version.split(".")
@@ -153,11 +153,13 @@ if __name__ == '__main__':
 
     try:
         major_minor = parse_version(version)
-        debpath, rpmpath, upstream_url = get_path_and_url(repo)
-        write_debs(debpath, major_minor, version, vversion, upstream_url, repo, email)
-        write_rpms(rpmpath, major_minor, version, vversion, upstream_url, repo, email)
+
         if generate_version_file:
             write_version_control_file(isgobuild, major_minor, version, vversion)
+        else:
+            debpath, rpmpath, upstream_url = get_path_and_url(repo)
+            write_debs(debpath, major_minor, version, vversion, upstream_url, repo, email)
+            write_rpms(rpmpath, major_minor, version, vversion, upstream_url, repo, email)
     except Exception as e:
         print(e)
         print("Usage: \n")
