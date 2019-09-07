@@ -6,13 +6,13 @@ import getopt
 deb_template = '''{0} ({1}+vmware.{8}-1) stable; urgency=optional
 
   * Upstream release: https://github.com/{2}/releases/tag/v{3}
-  * VMware release: https://github.com/heptio/{4}/releases/tag/v{5}+vmware.{9}
+  * VMware release: https://gitlab.eng.vmware.com/core-build/{4}/releases/tag/v{5}+vmware.{9}
 
  -- VMware Release Engineering <{6}>  {7}'''
 
 rpm_template = '''* {0} VMware Release Engineering <{1}>  - {2}-1.vmware.{7}
 - Upstream release: https://github.com/{3}/releases/tag/v{4}
-- VMware release: https://github.com/heptio/{5}/releases/tag/v{6}+vmware.{8}'''
+- VMware release: https://gitlab.eng.vmware.com/core-build/{5}/releases/tag/v{6}+vmware.{8}'''
 
 def get_path_and_url(repo):
     debpath = []
@@ -23,13 +23,13 @@ def get_path_and_url(repo):
             debpath.append("kubernetes/debs/xenial/" + i + "/debian")
         rpmpath = "kubernetes/rpms/specs"
         upstream_url = "kubernetes/kubernetes"
-    elif repo == "cni-plugins":
-        debpath.append("cni-plugins/debs/xenial/kubernetes-cni/debian")
-        rpmpath = "cni-plugins/rpms/specs"
+    elif repo == "cni_plugins":
+        debpath.append("cni_plugins/debs/xenial/kubernetes-cni/debian")
+        rpmpath = "cni_plugins/rpms/specs"
         upstream_url = "containernetworking/plugins"
-    elif repo == "cri-tools":
-        debpath.append("cri-tools/debs/xenial/cri-tools/debian")
-        rpmpath = "cri-tools/rpms/specs"
+    elif repo == "cri_tools":
+        debpath.append("cri_tools/debs/xenial/cri-tools/debian")
+        rpmpath = "cri_tools/rpms/specs"
         upstream_url = "kubernetes-incubator/cri-tools"
     else:
         sys.stderr.write("Can't recognize repo!" + "\n")
@@ -112,7 +112,7 @@ def usage():
 Options and arguments :
 -v, --version : version; e.g. 1.14.2
 --vversion : vmware version; e.g. 1
--r, --repo    : kubernetes, etcd, cni-plugins, cri-tools or coredns
+-r, --repo    : kubernetes, etcd, cni_plugins, cri_tools or coredns
 -h, --help    : print help message and exit (also --help)
 -e, --email   : email for changelog
 -g      : is gobuild environment
